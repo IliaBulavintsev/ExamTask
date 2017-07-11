@@ -14,16 +14,15 @@ import android.widget.TextView;
 import com.example.ilia.examtask.OnCurrenciesLoaded;
 import com.example.ilia.examtask.R;
 import com.example.ilia.examtask.controller.LoadCurrencies;
+import com.example.ilia.examtask.controller.NetworkReceiver;
 import com.example.ilia.examtask.model.CurrenciesList;
 import com.example.ilia.examtask.model.Currency;
 import com.example.ilia.examtask.storage.CurrenciesStorage;
-import com.example.ilia.examtask.storage.Storage;
+import com.example.ilia.examtask.Storage;
 
 import java.util.List;
 
-import static android.content.ContentValues.TAG;
-
-public class MainActivity extends AppCompatActivity implements OnCurrenciesLoaded{
+public class MainActivity extends AppCompatActivity implements OnCurrenciesLoaded, NetworkReceiver.OnNetworkChanges {
 
     private static final String TAG = "MainActivity";
     private Spinner spinnerFrom;
@@ -33,6 +32,7 @@ public class MainActivity extends AppCompatActivity implements OnCurrenciesLoade
     private Button buttonConvert;
     private LinearLayout linearLayoutConvert;
     private TextView textViewStub;
+    private TextView textViewNocacheNointernet;
     private CurrenciesStorage currenciesStorage;
     private LoadCurrencies loader;
 
@@ -49,8 +49,11 @@ public class MainActivity extends AppCompatActivity implements OnCurrenciesLoade
         buttonConvert = (Button) findViewById(R.id.button_convert);
         linearLayoutConvert = (LinearLayout) findViewById(R.id.liner_layout_converter);
         textViewStub = (TextView) findViewById(R.id.text_stub);
+        textViewNocacheNointernet = (TextView) findViewById(R.id.text_nocache_nointernet);
 
         currenciesStorage = ((Storage)getApplication()).getStorage();
+        Log.e(TAG, "onCreate: " + currenciesStorage.isReady() );
+        NetworkReceiver.setListener(this);
 
         loader = new LoadCurrencies(MainActivity.this);
         loader.execute();
@@ -92,16 +95,23 @@ public class MainActivity extends AppCompatActivity implements OnCurrenciesLoade
         settingAdapter(spinnerTo, currenciesStorage.getLoadedList().getCurrencies());
         linearLayoutConvert.setVisibility(View.VISIBLE);
         textViewStub.setVisibility(View.GONE);
+        textViewNocacheNointernet.setVisibility(View.GONE);
+        Log.e(TAG, "OnCurrenciesLoadedSuccess: " + currenciesStorage.isReady() );
     }
 
     @Override
     public void OnCurrenciesLoadedError() {
         Log.e(TAG, "OnCurrenciesLoadedError: " );
-        if (!currenciesStorage.isReady()){
-            Log.e(TAG, "onCreate: without Cache!");
-
+        if (currenciesStorage.isReady()){
+            settingAdapter(spinnerFrom, currenciesStorage.getLoadedList().getCurrencies());
+            settingAdapter(spinnerTo, currenciesStorage.getLoadedList().getCurrencies());
+            linearLayoutConvert.setVisibility(View.VISIBLE);
+            textViewStub.setVisibility(View.GONE);
         } else {
-            Log.e(TAG, "onCreate: with Cache!");
+            Log.e(TAG, "onCreate: without Cache!");
+            linearLayoutConvert.setVisibility(View.GONE);
+            textViewStub.setVisibility(View.GONE);
+            textViewNocacheNointernet.setVisibility(View.VISIBLE);
 
         }
 
@@ -113,5 +123,12 @@ public class MainActivity extends AppCompatActivity implements OnCurrenciesLoade
                 currenciesList);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinner.setAdapter(adapter);
+    }
+
+    @Override
+    public void OnNetworkChanges() {
+        Log.e(TAG, "OnNetworkChanges: " );
+        loader = new LoadCurrencies(MainActivity.this);
+        loader.execute();
     }
 }

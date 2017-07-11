@@ -10,11 +10,11 @@ public class CurrenciesStorage extends Application {
     private CurrenciesList loadedList;
 
     public synchronized boolean isReady() {
-        return loadedList != null;
+        return this.loadedList != null;
     }
 
     public synchronized CurrenciesList getLoadedList() {
-        return loadedList;
+        return this.loadedList;
     }
 
     public synchronized void setLoadedList(CurrenciesList loadedList) {

@@ -53,4 +53,19 @@ public class CurrenciesList implements Serializable {
         }
     }
 
+    public static CurrenciesList readFromStreamToXML(@NonNull InputStream stream) throws IOException {
+        BufferedReader reader = new BufferedReader(
+                new InputStreamReader(stream, Charset.forName("windows-1251")));
+
+        RegistryMatcher m = new RegistryMatcher();
+        m.bind(Double.class, new DoubleTransformer());
+        Serializer serializer = new Persister(m);
+
+        try {
+            return serializer.read(CurrenciesList.class, reader);
+        } catch (Exception e) {
+            throw new IOException(e);
+        }
+    }
+
 }

@@ -15,6 +15,16 @@
         android:textStyle="bold"
         android:visibility="visible"/>
 
+    <TextView
+        android:id="@+id/text_nocache_nointernet"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:text="Cache is empty, No internet"
+        android:gravity="center"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:visibility="gone"/>
+
 
 
     <LinearLayout
