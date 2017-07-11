@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.util.Log;
 
 import static android.content.ContentValues.TAG;
@@ -27,18 +28,18 @@ public class NetworkReceiver extends BroadcastReceiver {
 
         final ConnectivityManager connMgr = (ConnectivityManager) context
                 .getSystemService(Context.CONNECTIVITY_SERVICE);
-        final android.net.NetworkInfo wifi = connMgr
-                .getNetworkInfo(ConnectivityManager.TYPE_WIFI);
-        final android.net.NetworkInfo mobile = connMgr
-                .getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
 
-        if (wifi.isAvailable() || mobile.isAvailable()) {
-            Log.e(TAG, "onReceive: network find");
-            if(listener!=null) {
-                listener.OnNetworkChanges();
+        ConnectivityManager cm =
+                (ConnectivityManager)context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+        if (activeNetwork != null) {
+            boolean isConnected = activeNetwork.isConnectedOrConnecting();
+            if (isConnected) {
+                Log.e(TAG, "onReceive: network find");
+                if(listener!=null) {
+                    listener.OnNetworkChanges();
+                }
             }
         }
-
-
     }
 }

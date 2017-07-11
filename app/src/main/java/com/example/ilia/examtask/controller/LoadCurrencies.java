@@ -1,5 +1,6 @@
 package com.example.ilia.examtask.controller;
 
+import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
 
@@ -18,9 +19,11 @@ public class LoadCurrencies extends AsyncTask<Void, Void, Void> {
     private int code;
     private CurrenciesList loadList;
     private final String STRING_URL = "http://www.cbr.ru/scripts/XML_daily.asp";
+    private Context context;
 
-    public LoadCurrencies(OnCurrenciesLoaded listener){
+    public LoadCurrencies(OnCurrenciesLoaded listener, Context context){
         this.listener = listener;
+        this.context = context;
     }
 
     @Override
@@ -40,6 +43,8 @@ public class LoadCurrencies extends AsyncTask<Void, Void, Void> {
             HttpURLConnection.setFollowRedirects(true);
             code = con.getResponseCode();
             loadList = CurrenciesList.readFromStream(con.getInputStream());
+            CurrenciesList.writeToFile(context, loadList);
+
         } catch (IOException e) {
             e.printStackTrace();
         }

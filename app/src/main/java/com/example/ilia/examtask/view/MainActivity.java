@@ -2,18 +2,22 @@ package com.example.ilia.examtask.view;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.example.ilia.examtask.OnCurrenciesLoaded;
 import com.example.ilia.examtask.R;
 import com.example.ilia.examtask.controller.LoadCurrencies;
+import com.example.ilia.examtask.controller.LoadCurrenciesFromCache;
 import com.example.ilia.examtask.controller.NetworkReceiver;
 import com.example.ilia.examtask.model.CurrenciesList;
 import com.example.ilia.examtask.model.Currency;
@@ -31,10 +35,10 @@ public class MainActivity extends AppCompatActivity implements OnCurrenciesLoade
     private TextView textViewTo;
     private Button buttonConvert;
     private LinearLayout linearLayoutConvert;
-    private TextView textViewStub;
+    private ProgressBar textViewStub;
     private TextView textViewNocacheNointernet;
-    private CurrenciesStorage currenciesStorage;
     private LoadCurrencies loader;
+    private LoadCurrenciesFromCache loaderCache;
 
 
     @Override
@@ -48,73 +52,61 @@ public class MainActivity extends AppCompatActivity implements OnCurrenciesLoade
         textViewTo = (TextView) findViewById(R.id.text_to);
         buttonConvert = (Button) findViewById(R.id.button_convert);
         linearLayoutConvert = (LinearLayout) findViewById(R.id.liner_layout_converter);
-        textViewStub = (TextView) findViewById(R.id.text_stub);
+        textViewStub = (ProgressBar) findViewById(R.id.text_stub);
         textViewNocacheNointernet = (TextView) findViewById(R.id.text_nocache_nointernet);
 
-        currenciesStorage = ((Storage)getApplication()).getStorage();
-        Log.e(TAG, "onCreate: " + currenciesStorage.isReady() );
         NetworkReceiver.setListener(this);
+        editTextFrom.addTextChangedListener(new EditTextWatcher());
+        buttonConvert.setOnClickListener(new ButtonClickListener());
 
-        loader = new LoadCurrencies(MainActivity.this);
+        if (loader != null && !loader.isCancelled()) {
+            return;
+        }
+        loader = new LoadCurrencies(MainActivity.this, getApplicationContext());
         loader.execute();
 
 
     }
 
     @Override
-    protected void onStart() {
-        super.onStart();
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-    }
-
-    @Override
     protected void onDestroy() {
         super.onDestroy();
+        if (loader != null) {
+            loader.cancel(false);
+        }
+        if (loaderCache != null) {
+            loaderCache.cancel(false);
+        }
     }
 
 
     @Override
     public void OnCurrenciesLoadedSuccess(CurrenciesList loadedList) {
         Log.e(TAG, "OnCurrenciesLoadedSuccess: " + loadedList);
-        currenciesStorage.setLoadedList(loadedList);
-        settingAdapter(spinnerFrom, currenciesStorage.getLoadedList().getCurrencies());
-        settingAdapter(spinnerTo, currenciesStorage.getLoadedList().getCurrencies());
-        linearLayoutConvert.setVisibility(View.VISIBLE);
-        textViewStub.setVisibility(View.GONE);
-        textViewNocacheNointernet.setVisibility(View.GONE);
-        Log.e(TAG, "OnCurrenciesLoadedSuccess: " + currenciesStorage.isReady() );
+        settingAdapter(spinnerFrom, loadedList.getCurrencies());
+        settingAdapter(spinnerTo, loadedList.getCurrencies());
+        showLinerLayoutConverter(true);
+        showNocacheNointernet(false);
+        showProgressBar(false);
     }
 
     @Override
     public void OnCurrenciesLoadedError() {
-        Log.e(TAG, "OnCurrenciesLoadedError: " );
-        if (currenciesStorage.isReady()){
-            settingAdapter(spinnerFrom, currenciesStorage.getLoadedList().getCurrencies());
-            settingAdapter(spinnerTo, currenciesStorage.getLoadedList().getCurrencies());
-            linearLayoutConvert.setVisibility(View.VISIBLE);
-            textViewStub.setVisibility(View.GONE);
-        } else {
-            Log.e(TAG, "onCreate: without Cache!");
-            linearLayoutConvert.setVisibility(View.GONE);
-            textViewStub.setVisibility(View.GONE);
-            textViewNocacheNointernet.setVisibility(View.VISIBLE);
-
+        if (loaderCache != null && !loaderCache.isCancelled()) {
+            return;
         }
+        loaderCache = new LoadCurrenciesFromCache(MainActivity.this, getApplicationContext());
+        loaderCache.execute();
+        showLinerLayoutConverter(false);
+        showNocacheNointernet(false);
+        showProgressBar(true);
+    }
 
+    @Override
+    public void OnCurrenciesLoadedErrorWithCache() {
+        showLinerLayoutConverter(false);
+        showNocacheNointernet(true);
+        showProgressBar(false);
     }
 
     private void settingAdapter(Spinner spinner, List<Currency> currenciesList) {
@@ -128,7 +120,65 @@ public class MainActivity extends AppCompatActivity implements OnCurrenciesLoade
     @Override
     public void OnNetworkChanges() {
         Log.e(TAG, "OnNetworkChanges: " );
-        loader = new LoadCurrencies(MainActivity.this);
-        loader.execute();
+        if (linearLayoutConvert.getVisibility() == View.GONE && loader != null && !loader.isCancelled()){
+            loader = new LoadCurrencies(MainActivity.this, getApplicationContext());
+            loader.execute();
+        }
+    }
+
+    private void showProgressBar(boolean show) {
+        textViewStub.setVisibility(show? View.VISIBLE : View.GONE);
+    }
+
+    private void showLinerLayoutConverter(boolean show) {
+        linearLayoutConvert.setVisibility(show? View.VISIBLE : View.GONE);
+    }
+
+    private void showNocacheNointernet(boolean show) {
+        textViewNocacheNointernet.setVisibility(show? View.VISIBLE : View.GONE);
+    }
+
+    private class EditTextWatcher implements TextWatcher{
+        @Override
+        public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            if(s.toString().trim().length()==0){
+                buttonConvert.setEnabled(false);
+            } else {
+                buttonConvert.setEnabled(true);
+            }
+
+        }
+
+        @Override
+        public void afterTextChanged(Editable s) {
+
+        }
+
+        @Override
+        public void beforeTextChanged(CharSequence s, int start, int count,
+                                      int after) {
+        }
+
+    }
+
+    private class ButtonClickListener implements View.OnClickListener{
+
+        @Override
+        public void onClick(View v) {
+            performCalculation();
+        }
+
+        private void performCalculation() {
+            Log.e(TAG, "performCalculation: " );
+            String amount = editTextFrom.getText().toString().trim();
+
+            Currency from;
+            Currency to;
+            from = (Currency) spinnerFrom.getSelectedItem();
+            to = (Currency) spinnerTo.getSelectedItem();
+            double result = Double.parseDouble(amount) * (from.getNominal() * from.getValue())/ (to.getNominal() * to.getValue());
+            textViewTo.setText(String.valueOf(result));
+        }
     }
 }

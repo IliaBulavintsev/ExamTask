@@ -4,9 +4,12 @@ import org.simpleframework.xml.Attribute;
 import org.simpleframework.xml.Element;
 import org.simpleframework.xml.Root;
 
+import java.io.IOException;
+import java.io.Serializable;
+
 
 @Root(name = "Valute")
-public class Currency {
+public class Currency implements Serializable{
     @Attribute(name = "ID")
     private String id;
 
@@ -52,5 +55,26 @@ public class Currency {
     @Override
     public String toString() {
         return getCharCode();
+    }
+
+    private void writeObject(java.io.ObjectOutputStream stream)
+            throws IOException {
+        stream.writeObject(id);
+        stream.writeObject(name);
+        stream.writeInt(numCode);
+        stream.writeObject(charCode);
+        stream.writeDouble(nominal);
+        stream.writeDouble(value);
+
+    }
+
+    private void readObject(java.io.ObjectInputStream stream)
+            throws IOException, ClassNotFoundException {
+        id = (String) stream.readObject();
+        name = (String) stream.readObject();
+        numCode = stream.readInt();
+        charCode = (String) stream.readObject();
+        nominal = stream.readDouble();
+        value = stream.readDouble();
     }
 }
