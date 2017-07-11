@@ -21,8 +21,6 @@ import com.example.ilia.examtask.controller.LoadCurrenciesFromCache;
 import com.example.ilia.examtask.controller.NetworkReceiver;
 import com.example.ilia.examtask.model.CurrenciesList;
 import com.example.ilia.examtask.model.Currency;
-import com.example.ilia.examtask.storage.CurrenciesStorage;
-import com.example.ilia.examtask.Storage;
 
 import java.util.List;
 
