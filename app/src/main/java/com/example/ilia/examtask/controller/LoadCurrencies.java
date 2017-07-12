@@ -8,6 +8,7 @@ import com.example.ilia.examtask.OnCurrenciesLoaded;
 import com.example.ilia.examtask.model.CurrenciesList;
 
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
@@ -15,26 +16,20 @@ import java.net.URL;
 public class LoadCurrencies extends AsyncTask<Void, Void, Void> {
 
     private static final String TAG = "LoadCurrencies";
-    private OnCurrenciesLoaded listener;
     private int code;
     private CurrenciesList loadList;
     private final String STRING_URL = "http://www.cbr.ru/scripts/XML_daily.asp";
-    private Context context;
+    private WeakReference<OnCurrenciesLoaded> listener;
+    private WeakReference<Context> context;
 
     public LoadCurrencies(OnCurrenciesLoaded listener, Context context){
-        this.listener = listener;
-        this.context = context;
+        this.listener = new WeakReference<>(listener);
+        this.context = new WeakReference<>(context);
     }
 
     @Override
     protected Void doInBackground(Void... params) {
-        Log.e(TAG, "doInBackground: ");
-
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        Context tryContext = context.get();
 
         try {
             URL obj = new URL(STRING_URL);
@@ -43,7 +38,9 @@ public class LoadCurrencies extends AsyncTask<Void, Void, Void> {
             HttpURLConnection.setFollowRedirects(true);
             code = con.getResponseCode();
             loadList = CurrenciesList.readFromStream(con.getInputStream());
-            CurrenciesList.writeToFile(context, loadList);
+            if (tryContext != null) {
+                CurrenciesList.writeToFile(tryContext, loadList);
+            }
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -54,11 +51,14 @@ public class LoadCurrencies extends AsyncTask<Void, Void, Void> {
     @Override
     protected void onPostExecute(Void aVoid) {
         super.onPostExecute(aVoid);
-        Log.e(TAG, "onPostExecute: "+ code);
-        if (code == 200 && loadList != null) {
-            listener.OnCurrenciesLoadedSuccess(loadList);
-        } else {
-            listener.OnCurrenciesLoadedError();
+        OnCurrenciesLoaded tryListener = listener.get();
+        if (tryListener != null){
+            if (code == 200 && loadList != null) {
+                tryListener.OnCurrenciesLoadedSuccess(loadList);
+            } else {
+                tryListener.OnCurrenciesLoadedError();
+            }
         }
+
     }
 }

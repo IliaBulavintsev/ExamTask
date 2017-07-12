@@ -54,7 +54,7 @@ public class Currency implements Serializable{
 
     @Override
     public String toString() {
-        return getCharCode();
+        return getCharCode()+ " - " + getName();
     }
 
     private void writeObject(java.io.ObjectOutputStream stream)

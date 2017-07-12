@@ -5,9 +5,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.util.Log;
-
-import static android.content.ContentValues.TAG;
 
 
 public class NetworkReceiver extends BroadcastReceiver {
@@ -25,17 +22,12 @@ public class NetworkReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
 
-
-        final ConnectivityManager connMgr = (ConnectivityManager) context
-                .getSystemService(Context.CONNECTIVITY_SERVICE);
-
         ConnectivityManager cm =
                 (ConnectivityManager)context.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
         if (activeNetwork != null) {
             boolean isConnected = activeNetwork.isConnectedOrConnecting();
             if (isConnected) {
-                Log.e(TAG, "onReceive: network find");
                 if(listener!=null) {
                     listener.OnNetworkChanges();
                 }

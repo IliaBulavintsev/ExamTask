@@ -2,7 +2,6 @@ package com.example.ilia.examtask.model;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.util.Log;
 
 import org.simpleframework.xml.Attribute;
@@ -11,10 +10,8 @@ import org.simpleframework.xml.Root;
 import org.simpleframework.xml.Serializer;
 import org.simpleframework.xml.core.Persister;
 import org.simpleframework.xml.transform.RegistryMatcher;
-import org.simpleframework.xml.transform.Transform;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -22,12 +19,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.OutputStream;
 import java.io.Serializable;
-import java.lang.reflect.Array;
 import java.nio.charset.Charset;
-import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 
 
@@ -93,7 +86,6 @@ public class CurrenciesList implements Serializable {
             if (output != null)
                 output.close();
         }
-        Log.e(TAG, "writeToFile: " );
 
     }
 
@@ -101,7 +93,6 @@ public class CurrenciesList implements Serializable {
 
         FileInputStream fis = context.openFileInput(FILE_NAME);
         ObjectInputStream objectInputStream = new ObjectInputStream(fis);
-        Log.e(TAG, "ReadFromFile: " );
         return (CurrenciesList) objectInputStream.readObject();
     }
 

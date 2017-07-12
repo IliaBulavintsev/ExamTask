@@ -1,3 +1,9 @@
 <resources>
     <string name="app_name">ExamTask</string>
+    <string name="button_perform">Convert</string>
+    <string name="no_cache_no_internet">Cache is empty, No internet</string>
+    <string name="label_from">From</string>
+    <string name="label_to">To</string>
+    <string name="label_to_result">Result</string>
+    <string name="edit_text_hint">Input value to convert</string>
 </resources>

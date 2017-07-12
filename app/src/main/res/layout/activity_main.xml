@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/frame_layout"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:padding="@dimen/layout_padding"
     tools:context="com.example.ilia.examtask.view.MainActivity">
 
     <ProgressBar
@@ -17,54 +19,124 @@
         android:id="@+id/text_nocache_nointernet"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:text="Cache is empty, No internet"
+        android:text="@string/no_cache_no_internet"
         android:gravity="center"
-        android:textSize="24sp"
-        android:textStyle="bold"
+        android:textAppearance="@style/TextAppearance.NocacheNointernet"
         android:visibility="gone"/>
 
 
-
-    <LinearLayout
-        android:id="@+id/liner_layout_converter"
+    <ScrollView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
+        android:id="@+id/scroll_layout_converter"
         android:layout_gravity="center"
-        android:visibility="gone">
+        android:padding="@dimen/padding_converter"
+        android:visibility="visible">
 
-        <EditText
-            android:id="@+id/edit_from"
-            android:inputType="numberDecimal"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
-
-        <Spinner
-            android:id="@+id/spinner_from"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
-        </Spinner>
-
-        <Spinner
-            android:id="@+id/spinner_to"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
-        </Spinner>
-
-        <Button
-            android:id="@+id/button_convert"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Перевести"
-            android:enabled="false"/>
+            android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/text_to"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent" />
+            <EditText
+                android:id="@+id/edit_from"
+                android:inputType="numberDecimal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/edit_text_hint"/>
 
-    </LinearLayout>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:paddingBottom="@dimen/padding_converter"
+                android:paddingTop="@dimen/padding_converter"
+                android:layout_marginBottom="@dimen/layout_margin">
+
+                <TextView
+                    android:id="@+id/label_for_from"
+                    android:layout_width="@dimen/text_view_width"
+                    android:layout_height="match_parent"
+                    android:textSize="@dimen/label_font"
+                    android:text="@string/label_from"
+                    android:gravity="center_vertical"
+                    android:layout_weight="0.1"/>
+
+                <Spinner
+                    android:id="@+id/spinner_from"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="0.9">
+
+                </Spinner>
+
+            </LinearLayout>
+
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:paddingBottom="@dimen/padding_converter"
+                android:paddingTop="@dimen/padding_converter"
+                android:layout_marginBottom="@dimen/layout_margin">
+
+                <TextView
+                    android:id="@+id/label_for_to"
+                    android:layout_width="@dimen/text_view_width"
+                    android:layout_height="match_parent"
+                    android:textSize="@dimen/label_font"
+                    android:layout_weight="0.1"
+                    android:gravity="center_vertical"
+                    android:text="@string/label_to"/>
+
+                <Spinner
+                    android:id="@+id/spinner_to"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="0.9">
+
+                </Spinner>
+
+            </LinearLayout>
+
+            <Button
+                android:id="@+id/button_convert"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/button_perform"
+                android:enabled="false"/>
+
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:paddingBottom="@dimen/padding_converter"
+                android:paddingTop="@dimen/padding_converter"
+                android:layout_marginBottom="@dimen/layout_margin">
+
+                <TextView
+                    android:id="@+id/label_for_result"
+                    android:layout_width="@dimen/text_view_width"
+                    android:layout_height="match_parent"
+                    android:textSize="@dimen/label_font"
+                    android:layout_weight="0.1"
+                    android:text="@string/label_to_result"
+                    android:gravity="center_vertical"/>
+
+                <TextView
+                    android:id="@+id/text_to"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="@style/TextAppearance.Result"
+                    android:layout_weight="0.9"/>
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </ScrollView>
+
 
 </FrameLayout>

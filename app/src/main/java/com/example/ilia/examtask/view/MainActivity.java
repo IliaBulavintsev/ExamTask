@@ -9,19 +9,21 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.LinearLayout;
 import android.widget.ProgressBar;
+import android.widget.ScrollView;
 import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.example.ilia.examtask.OnCurrenciesLoaded;
 import com.example.ilia.examtask.R;
+import com.example.ilia.examtask.controller.Calculator;
 import com.example.ilia.examtask.controller.LoadCurrencies;
 import com.example.ilia.examtask.controller.LoadCurrenciesFromCache;
 import com.example.ilia.examtask.controller.NetworkReceiver;
 import com.example.ilia.examtask.model.CurrenciesList;
 import com.example.ilia.examtask.model.Currency;
 
+import java.text.DecimalFormat;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements OnCurrenciesLoaded, NetworkReceiver.OnNetworkChanges {
@@ -32,7 +34,7 @@ public class MainActivity extends AppCompatActivity implements OnCurrenciesLoade
     private EditText editTextFrom;
     private TextView textViewTo;
     private Button buttonConvert;
-    private LinearLayout linearLayoutConvert;
+    private ScrollView scrollLayoutConvert;
     private ProgressBar textViewStub;
     private TextView textViewNocacheNointernet;
     private LoadCurrencies loader;
@@ -49,13 +51,17 @@ public class MainActivity extends AppCompatActivity implements OnCurrenciesLoade
         editTextFrom = (EditText) findViewById(R.id.edit_from);
         textViewTo = (TextView) findViewById(R.id.text_to);
         buttonConvert = (Button) findViewById(R.id.button_convert);
-        linearLayoutConvert = (LinearLayout) findViewById(R.id.liner_layout_converter);
+        scrollLayoutConvert = (ScrollView) findViewById(R.id.scroll_layout_converter);
         textViewStub = (ProgressBar) findViewById(R.id.text_stub);
         textViewNocacheNointernet = (TextView) findViewById(R.id.text_nocache_nointernet);
 
         NetworkReceiver.setListener(this);
         editTextFrom.addTextChangedListener(new EditTextWatcher());
         buttonConvert.setOnClickListener(new ButtonClickListener());
+
+        showScrollLayoutConverter(false);
+        showNocacheNointernet(false);
+        showProgressBar(true);
 
         if (loader != null && !loader.isCancelled()) {
             return;
@@ -80,10 +86,9 @@ public class MainActivity extends AppCompatActivity implements OnCurrenciesLoade
 
     @Override
     public void OnCurrenciesLoadedSuccess(CurrenciesList loadedList) {
-        Log.e(TAG, "OnCurrenciesLoadedSuccess: " + loadedList);
         settingAdapter(spinnerFrom, loadedList.getCurrencies());
         settingAdapter(spinnerTo, loadedList.getCurrencies());
-        showLinerLayoutConverter(true);
+        showScrollLayoutConverter(true);
         showNocacheNointernet(false);
         showProgressBar(false);
     }
@@ -95,14 +100,14 @@ public class MainActivity extends AppCompatActivity implements OnCurrenciesLoade
         }
         loaderCache = new LoadCurrenciesFromCache(MainActivity.this, getApplicationContext());
         loaderCache.execute();
-        showLinerLayoutConverter(false);
+        showScrollLayoutConverter(false);
         showNocacheNointernet(false);
         showProgressBar(true);
     }
 
     @Override
     public void OnCurrenciesLoadedErrorWithCache() {
-        showLinerLayoutConverter(false);
+        showScrollLayoutConverter(false);
         showNocacheNointernet(true);
         showProgressBar(false);
     }
@@ -117,8 +122,10 @@ public class MainActivity extends AppCompatActivity implements OnCurrenciesLoade
 
     @Override
     public void OnNetworkChanges() {
-        Log.e(TAG, "OnNetworkChanges: " );
-        if (linearLayoutConvert.getVisibility() == View.GONE && loader != null && !loader.isCancelled()){
+        if (scrollLayoutConvert.getVisibility() == View.GONE && loader != null && !loader.isCancelled()){
+            showScrollLayoutConverter(false);
+            showNocacheNointernet(false);
+            showProgressBar(true);
             loader = new LoadCurrencies(MainActivity.this, getApplicationContext());
             loader.execute();
         }
@@ -128,8 +135,8 @@ public class MainActivity extends AppCompatActivity implements OnCurrenciesLoade
         textViewStub.setVisibility(show? View.VISIBLE : View.GONE);
     }
 
-    private void showLinerLayoutConverter(boolean show) {
-        linearLayoutConvert.setVisibility(show? View.VISIBLE : View.GONE);
+    private void showScrollLayoutConverter(boolean show) {
+        scrollLayoutConvert.setVisibility(show? View.VISIBLE : View.GONE);
     }
 
     private void showNocacheNointernet(boolean show) {
@@ -164,19 +171,17 @@ public class MainActivity extends AppCompatActivity implements OnCurrenciesLoade
 
         @Override
         public void onClick(View v) {
-            performCalculation();
-        }
-
-        private void performCalculation() {
-            Log.e(TAG, "performCalculation: " );
             String amount = editTextFrom.getText().toString().trim();
 
             Currency from;
             Currency to;
             from = (Currency) spinnerFrom.getSelectedItem();
             to = (Currency) spinnerTo.getSelectedItem();
-            double result = Double.parseDouble(amount) * (from.getNominal() * from.getValue())/ (to.getNominal() * to.getValue());
-            textViewTo.setText(String.valueOf(result));
+            Calculator calculator = new Calculator(amount, from.getNominal(), from.getValue(), to.getNominal(), to.getValue());
+            double result = calculator.performCalculation();
+            String resultString = new DecimalFormat("#0.00").format(result) + " " + to.getCharCode();
+            textViewTo.setText(resultString);
+
         }
     }
 }
