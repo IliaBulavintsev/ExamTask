@@ -6,17 +6,21 @@ import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 
+import com.example.ilia.examtask.OnCurrenciesLoaded;
+
+import java.lang.ref.WeakReference;
+
 
 public class NetworkReceiver extends BroadcastReceiver {
 
-    private static OnNetworkChanges listener;
+    private static WeakReference<OnNetworkChanges> listener;
 
     public interface OnNetworkChanges {
         void OnNetworkChanges();
     }
 
     public static void setListener(OnNetworkChanges listener) {
-        NetworkReceiver.listener = listener;
+        NetworkReceiver.listener = new WeakReference<>(listener);
     }
 
     @Override
@@ -28,8 +32,9 @@ public class NetworkReceiver extends BroadcastReceiver {
         if (activeNetwork != null) {
             boolean isConnected = activeNetwork.isConnectedOrConnecting();
             if (isConnected) {
-                if(listener!=null) {
-                    listener.OnNetworkChanges();
+                OnNetworkChanges tryListener = listener.get();
+                if(tryListener!=null) {
+                    tryListener.OnNetworkChanges();
                 }
             }
         }
